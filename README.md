@@ -9,5 +9,5 @@
 
 ## 📂 저장소 구조 및 학습 진도
 - [x] **01_ML_Core_Theory**: 핸즈온 머신러닝 기반 핵심 ML 파이프라인 구현
-- [ ] **02_Deep_Learning_Core**: 딥러닝의 정석 기반 PyTorch 핵심 레이어 구현
+- [ ] **02_Deep_Learning_Core**: 《딥러닝의 정석》 기반 PyTorch 핵심 레이어 구현
 - [ ] **03_Advanced_Transformer**: 트랜스포머 아키텍처 밑바닥부터 하드코딩
