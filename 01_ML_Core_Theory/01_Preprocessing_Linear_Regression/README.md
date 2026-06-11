@@ -8,7 +8,7 @@
 
 ## 🎯 핵심 실험 및 트러블슈팅 요약
 
-상세한 이론적 배경과 분석 리포트는 [📄 기술 블로그 포스팅/문서]([./docs/troubleshooting.mdhttps://velog.io/@daniel3721/Hands-on-ML-01.-%ED%95%98%EC%9D%B4%ED%8D%BC%ED%8C%8C%EB%9D%BC%EB%AF%B8%ED%84%B0-%ED%8A%9C%EB%8B%9D%EA%B3%BC-%EC%A0%84%EC%B2%98%EB%A6%AC-%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8](https://velog.io/@daniel3721/Hands-on-ML-01.-%ED%95%98%EC%9D%B4%ED%8D%BC%ED%8C%8C%EB%9D%BC%EB%AF%B8%ED%84%B0-%ED%8A%9C%EB%8B%9D%EA%B3%BC-%EC%A0%84%EC%B2%98%EB%A6%AC-%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8%EC%9D%98-%ED%9E%98))에 별도 정리되어 있습니다.
+상세한 이론적 배경과 분석 리포트는 [📄 기술 블로그 포스팅/문서](https://velog.io/@daniel3721/Hands-on-ML-01.-%ED%95%98%EC%9D%B4%ED%8D%BC%ED%8C%8C%EB%9D%BC%EB%AF%B8%ED%84%B0-%ED%8A%9C%EB%8B%9D%EA%B3%BC-%EC%A0%84%EC%B2%98%EB%A6%AC-%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8%EC%9D%98-%ED%9E%98)에 별도 정리되어 있습니다.
 
 ### 🚨 1. 데이터 스누핑(Data Snooping) 발견 및 격리 (회귀)
 * **문제 진단:** Train/Validation 세트 분리 전 전체 데이터 `X`에 대해 `full_pipeline.fit_transform(X)`을 수행하는 결함 식별. 검증 데이터의 통계량(중앙값, 평균, 표준편차)이 훈련 과정에 유출(Leakage)되는 맹점 확인.
