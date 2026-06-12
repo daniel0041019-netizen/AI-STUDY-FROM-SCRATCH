@@ -39,13 +39,6 @@
 | **Linear Regression (OLS)** | \$17,432.36 | \$22,724.31 | 차원 폭발로 인한 치명적인 **과대적합(Overfitting)** 발생 |
 | **Optimized Lasso ($\alpha=0.001$)** | \$26,360.87 | \$25,157.79 | 207개 노이즈 변수 제거를 통한 **일반화 성능 확보 및 격차 최소화** |
 
-### 📈 Lasso 상위 15개 핵심 예측 특성
-모델 최적화 후 가중치(Coefficient) 절대값 기준 상위 15개 변수 추출 시각화 결과입니다.
-
-![Lasso Top Features](./lasso_top_features.png)
-
----
-
 ## 🛠️ 기술 스택 및 라이브러리
 * **Language:** Python 3.x
 * **Data Science:** `pandas`, `numpy`, `scikit-learn`
