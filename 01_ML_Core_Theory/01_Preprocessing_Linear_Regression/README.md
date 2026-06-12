@@ -54,8 +54,8 @@
 ## 💻 핵심 코드 아키텍처 (`house_price_pipeline.py`)
 
 ```python
-# 1. 전처리 파이프라인 설계 (ColumnTransformer를 통한 누수 방지 프레임 구축)
-full_pipeline = ColumnTransformer([
+# 1. 고급 전처리 파이프라인 설계 (ColumnTransformer 통합 및 멀티모달 처리)
+preprocessor = ColumnTransformer([
     ('num', Pipeline([
         ('imputer', SimpleImputer(strategy='median')),
         ('scaler', StandardScaler())
@@ -63,13 +63,25 @@ full_pipeline = ColumnTransformer([
     ('cat', Pipeline([
         ('imputer', SimpleImputer(strategy='most_frequent')),
         ('encoder', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
-    ]), cat_attribs)
+    ]), cat_attribs),
+    ('multimodal', Pipeline([
+        ('imputer', SimpleImputer(strategy='median')),
+        ('bucketizer', KBinsDiscretizer(n_bins=3, encode='onehot-dense', strategy='kmeans'))
+    ]), [multimodal_feature])
 ])
 
-# 2. 하이퍼파라미터 최적화 (GridSearchCV + 5-Fold CV)
+# 2. 메가 파이프라인 구성 및 하이퍼파라미터 최적화 (Data Snooping 원천 차단)
+mega_pipeline = Pipeline([
+    ('preprocessor', preprocessor),
+    ('model', Lasso(max_iter=20000))
+])
+
 lasso_grid = GridSearchCV(
-    Lasso(max_iter=20000), 
-    param_grid={'alpha': [0.001, 0.005, 0.01, 0.05, 0.1, 1.0, 10.0, 100.0]}, 
+    mega_pipeline, 
+    param_grid={'model__alpha': [0.001, 0.005, 0.01, 0.05, 0.1, 1.0, 10.0, 100.0]}, 
     cv=5,
     scoring='neg_root_mean_squared_error'
 )
+
+# 🚨 순수 Raw Data 상태에서 분할된 X_train만 주입하여 교차 검증 내 데이터 누수 방지
+lasso_grid.fit(X_train, y_train)
