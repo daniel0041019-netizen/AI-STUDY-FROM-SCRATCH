@@ -5,7 +5,7 @@
 알려진 이론의 단순 답습을 넘어, 수식적 제약과 기하학적 직관 사이의 괴리를 파고들었으며 데이터 스케일($m \gg n$ vs $n \gg m$)에 따른 연산 속도의 반전(차원의 역전 현상)을 벤치마킹하여 모델 제어 능력을 고도화한 과정을 기록했습니다.
 
 ## 🎯 핵심 실험 및 트러블슈팅 요약
-상세한 이론적 배경과 분석 리포트는 📄 [기술 블로그 포스팅/벨로그](https://velog.io/)에 별도 정리되어 있습니다.
+상세한 이론적 배경과 분석 리포트는 📄 [기술 블로그 포스팅/벨로그]([https://velog.io/](https://velog.io/@daniel3721/Hands-on-ML-02))에 별도 정리되어 있습니다.
 
 ### 🚨 1. $C$와 $\gamma$(Gamma)의 규제 강도 및 기하학적 경계 실측 (시각화)
 - **문제 진단:** 두 하이퍼파라미터가 동시에 변할 때 왜 극단적인 오버/언더피팅이 발생하는지 기하학적 인과관계 추적 목적.
@@ -36,62 +36,91 @@
 - **실험 결과:** 알고리즘이 즉시 멈추지는 않으나, 최적화 손실 공간이 울퉁불퉁하게 왜곡되어 수렴성(Convergence)이 완전히 붕괴함. 전역 최적점을 찾지 못하고 무한 루프를 돌며 내부 학습 반복 횟수(`n_iter_`)가 정상 RBF 커널 대비 비정상적으로 치솟는 한계 관측. 검증된 커널 범주 안에서 제어해야 하는 펀더멘탈 증명.
 
 ---
+## 🔬 3대 핵심 실증 실험 (Experiments & Results)
 
-## 📊 실험 결과 및 비교 (Analysis)
+### 📂 실험 1. 하이퍼파라미터($C, \gamma$) 시각화 및 초평면 투영 분석
+* **파일명:** `01_hyperparameter_and_rbf_analyser.ipynb`
+* **실험 목적 (Why):** * $C$(마진 오류 패널티)와 $\gamma$(RBF 커널 영향력 반경) 변수가 하이퍼스페이스 공간에서 경계의 유연성을 어떻게 통제하는지 기하학적 인과관계를 규명합니다.
+  * "고차원에서는 분명 선형(초평면) 분리를 한다는데, 왜 저차원 시각화 그래프에서는 곡선으로 보이는가?"라는 기하학적 모순을 **2차원 투영(Projection) 착시** 관점에서 시각적으로 증명합니다.
+* **실험 방법 (How):**
+  * `make_circles` 데이터를 활용하여 아군 통제 구역(Class 0)과 적 침투 위험 구역(Class 1)을 설정한 **군 전술 시나리오** 데이터셋(비선형)을 생성합니다.
+  * 파라미터 조합에 따른 4가지 전술적 시나리오(교범위주, 융통성제로, 광역감시, 국소경계 등)를 구축하고 결정 경계 표면(`contourf`)과 마진 트랙을 등고선으로 시각화합니다.
+* **실험 결과 (Result):**
+  * **C와 $\gamma$의 밀당 관계 확인:** 둘 중 하나라도 극단적으로 커지면 개별 샘플에 과도하게 집착하는 오버피팅(국소적 섬 형성)이 발생하고, 둘 다 작아지면 경계가 단순해지는 언더피팅(과도한 완충지대)이 발생함을 실측했습니다.
+  * **투영 착시 해제:** 모니터상의 구불구불한 2차원 곡선 경계는 고차원 힐버트 공간에서 대각선으로 칼같이 잘린 평평한 초평면이 저차원 바닥으로 내려앉으며 생긴 **그림자(Shadow)**임을 등고선 밸류(-1, 0, 1) 변화로 확인했습니다.
 
-### 1. 데이터 스케일별 연산 효율성 벤치마킹 로그 ($m \gg n$ vs $n \gg m$)
+---
 
-| 실험 시나리오 | 최적화 모델 및 설정 모드 | 연산 시간 (초) | 진단 및 평가 |
+### 📂 실험 2. 샘플·특성 폭발에 따른 복잡도 격차 및 차원 역전 벤치마킹
+* **파일명:** `02_svm_complexity_benchmarking.ipynb`
+* **실험 목적 (Why):**
+  * 선형 SVM을 지원하는 세 모델(`SVC`, `LinearSVC`, `SGDClassifier`)의 내부 최적화 엔진 차이와 그에 따른 시간 복잡도 요동을 실측합니다.
+  * `LinearSVC`에서 `loss='squared_hinge'`(제곱 힌지)와 `hinge`(순수 힌지)의 미분 가능성에 따른 연산 속도 차이를 검증합니다.
+  * 특성 수가 샘플 수보다 압도적으로 많을 때($n \gg m$), 가중치 변수 $w$를 푸는 원문제(Primal)보다 라그랑주 승수 $\alpha$를 푸는 쌍대문제(Dual)가 유리하다는 수학적 명제를 증명합니다.
+* **실험 방법 (How):**
+  * **시나리오 A (샘플 폭발, $m=40,000, n=10$):** 데이터셋을 RAM에 올린 후 4개 모델/옵션의 전수 훈련 속도를 측정합니다. (단, $O(m^2)$ 복잡도를 가진 `SVC`는 시스템 다운 방지를 위해 8,000개만 샘플링하여 실측)
+  * **시나리오 B (특성 폭발, $m=800, n=5,000$):** `LinearSVC`에서 `dual=False`(원문제) 옵션과 `dual=True`(쌍대문제) 옵션의 수렴 성능을 1:1로 비교 벤치마킹합니다.
+* **실험 결과 (Result):**
+  * **[시나리오 A]** `SVC(linear)`는 샘플 증가 시 시간 복잡도가 폭발적으로 증가하여 8,000개만 학습해도 수 초 이상 지연된 반면, `LinearSVC`와 `SGDClassifier`는 $O(m)$ 스케일로 연산하며 40,000개 전수를 0.0X초 만에 돌파했습니다. 특히 전 구간 미분이 가능한 `squared_hinge`가 순수 힌지보다 수렴 속도가 훨씬 가팔랐습니다.
+  * **[시나리오 B]** 특성이 압도적인 고차원 환경에서 원문제 모드(`dual=False`)는 가중치 $w$ 행렬 크기 폭발로 지연이 발생했으나, 쌍대문제 모드(`dual=True`)는 특성의 저주를 완벽히 우회하며 **즉시 최적점에 수렴(속도 반전 실증)**했습니다.
+
+---
+
+### 📂 실험 3. 머서의 정리 위반 커널 주입 시 알고리즘 동작 실험
+* **파일명:** `03_mercer_theorem_violation_test.ipynb`
+* **실험 목적 (Why):**
+  * 교재에서 강조하는 "머서의 정리(Mercer's Theorem)를 만족하는 함수만 커널 트릭에 쓸 수 있다"는 규칙을 깨뜨렸을 때, 최적화 알고리즘 내부에서 어떤 시스템적 오류나 수학적 병목이 발생하는지 추적합니다.
+  * 준양정치(Positive Semi-definite, PSD) 행렬 조건이 붕괴했을 때 비용 함수 공간의 기하학적 변화를 코드로 목격하는 것이 목적입니다.
+* **실험 방법 (How):**
+  * 두 행렬 내적값에 사인 함수를 적용하고 음수 가중치를 곱한 불량 커널 함수 `non_mercer_kernel`($-5 \times \sin(X_1 \cdot X_2^T)$)을 커스텀 정의합니다.
+  * 완벽한 수학적 수렴성을 가진 표준 가우시안 RBF 커널과 최적화 최대 반복 횟수(`max_iter=50000`)를 동일하게 맞춘 후, 내부 반복 카운트 속성인 `n_iter_` 값을 비교 분석합니다.
+* **실험 결과 (Result):**
+  * 수학적 위반 커널을 주입하더라도 파이썬 코드가 곧바로 크래시(Crash)를 일으키며 멈추지는 않았습니다.
+  * 하지만 비용 함수 공간이 볼록한 보울(Bowl) 형태를 잃고 찌그러지면서 경사하강 알고리즘이 전역 최적점을 찾지 못하고 헤매는 **최적화 싱크홀** 현상이 발생했습니다. 결과적으로 표준 RBF 커널이 단 수십 회 만에 수렴한 반면, 불량 커널은 내부 반복 횟수(`n_iter_`)가 비정상적으로 폭발하거나 무한 루프 경고를 뱉어내며 수학적 펀더멘탈의 중요성을 증명했습니다.
+
+---
+
+## 📊 실험 데이터 수치 요약 (Analysis)
+
+### 1) 대량 샘플 환경 벤치마킹 ($m = 40,000, n = 10$)
+| 모델 및 손실 함수 옵션 | 학습 샘플 수 | 연산 복잡도 | 성능 및 수렴 속도 진단 |
 | :--- | :--- | :--- | :--- |
-| **시나리오 A: 샘플 대량 폭발**<br>($m=40,000, \ n=10$) | **LinearSVC** (Squared Hinge, dual=False) | **0.0814s** | 원문제(Primal) 모드 최적화로 초고속 수렴 성공 |
-| | **LinearSVC** (Hinge, dual=True) | 0.4312s | 미분 불가능 손실 함수로 인한 연산 바인딩 |
-| | **SVC** (kernel='linear') | *지연 (8.24s)* | $\mathcal{O}(m^2)$ 그람 행렬 연산 유령으로 8,000개만 훈련해도 병목 발생 |
-| | **SGDClassifier** (Hinge) | **0.0521s** | 확률적 경사하강법 특유의 압도적 대용량 처리 성능 확인 |
-| **시나리오 B: 특성 대량 폭발**<br>($m=800, \ n=5,000$) | **LinearSVC** (dual=False, 원문제 최적화) | 0.4578s | 특성 수($n$)가 최적화 변수가 되어 연산 크기 폭발 |
-| | **LinearSVC** (dual=True, 쌍대문제 최적화) | **0.1194s** | 변수 주체가 샘플 수($m$)로 이전되어 **차원 역전 및 우회 성공** |
+| **SVC (Linear, Dual=True)** | 8,000개 (제한) | $O(m^2 \sim m^3)$ | 그람 행렬 연산 병목으로 심각한 연산 지연 발생 |
+| **LinearSVC (Squared Hinge, Dual=False)** | 40,000개 (전수) | $O(m)$ | 전 구간 미분 가능성 가미로 **최고 속도 수렴** |
+| **LinearSVC (Hinge, Dual=True)** | 40,000개 (전수) | $O(m)$ | 꺾인 점(미분 불가능) 처리로 인해 제곱 힌지 대비 다소 느림 |
+| **SGDClassifier (Hinge)** | 40,000개 (전수) | $O(m)$ | 점진적 학습으로 안정적인 Out-of-core 잠재력 확보 |
 
-### 2. 머서의 정리 위반 여부에 따른 내부 수렴성 결과 ($m=200, \ n=2$)
-
-| 적용 커널 모델 (Kernel) | 내부 최적화 반복 횟수 (`n_iter_`) | 최종 수렴 상태 (Convergence) |
+### 2) 대량 특성 환경 내 차원 역전 ($m = 800, n = 5,000$)
+| LinearSVC 모델 모드 | 최적화 타겟 변수 | 연산 효율성 평가 |
 | :--- | :--- | :--- |
-| **Standard RBF Kernel** (머서 충족) | **24회** | 안정적인 전역 최적점(Global Minimum) 안착 |
-| **Custom Non-Mercer Kernel** (머서 위반) | **14,582회** | 손실 공간 왜곡으로 인한 로컬 미니멈 유착 및 수렴성 유실 |
+| **원문제 모드 (`dual=False`)** | 가중치 벡터 $w$ ($n$차원) | 5,000개 특성 행렬을 직접 다루어 연산 딜레이 발생 |
+| **쌍대문제 모드 (`dual=True`)** | 라그랑주 승수 $\alpha$ ($m$차원) | 800개 샘플 차원 안에서만 연산하여 **압도적 속도로 우회 수렴** |
 
 ---
 
 ## 🛠️ 기술 스택 및 라이브러리
-- **Language:** Python 3.x
-- **Libraries:** scikit-learn, numpy, matplotlib
+
+* **Language:** Python 3.10+
+* **Data Science:** NumPy, SciKit-Learn
+* **Visualization:** Matplotlib
 
 ---
 
-## 💻 핵심 코드 아키텍처 (`svm_internal_optimization.py`)
+## 💻 핵심 소스코드 아키텍처
 
+### 1. RBF 투영 및 결정 경계 시각화 패키지 (`01_...ipynb`)
 ```python
-import time
-import numpy as np
-from sklearn.datasets import make_classification
-from sklearn.svm import SVC, LinearSVC
+# 전술 데이터 표준화 및 RBF SVM 모델 빌드 메가 파이프라인
+clf = Pipeline([
+    ("scaler", StandardScaler()),
+    ("svm", SVC(kernel="rbf", C=sc["C"], gamma=sc["gamma"]))
+])
+clf.fit(X_tactical, y_tactical)
 
-# 1. 시나리오 B: 특성(Feature) 폭발 데이터 생성 (n >> m)
-X_large_n, y_large_n = make_classification(n_samples=800, n_features=5000, random_state=42)
+# 고차원 칼질(초평면)이 2차원 지도로 내려앉은 그림자(Projection) 계산
+y_pred = clf.predict(X_map).reshape(x0.shape)
+y_decision = clf.decision_function(X_map).reshape(x0.shape)
 
-# 2. 원문제(Primal) 모드 구동: 가중치 벡터 w가 연산의 주체 (dual=False)
-start_primal = time.time()
-primal_model = LinearSVC(dual=False, loss="squared_hinge", max_iter=10000, random_state=42)
-primal_model.fit(X_large_n, y_large_n)
-print(f"[-] LinearSVC 원문제 모드 수렴 속도: {time.time() - start_primal:.4f}초")
-
-# 3. 쌍대문제(Dual) 모드 구동: 라그랑주 승수 alpha가 연산의 주체 (dual=True)
-# 🚨 특성 수가 샘플 수보다 극단적으로 많을 때 커널 트릭의 수학적 프레임을 가동하여 연산 우회
-start_dual = time.time()
-dual_model = LinearSVC(dual=True, loss="hinge", max_iter=10000, random_state=42)
-dual_model.fit(X_large_n, y_large_n)
-print(f"[+] LinearSVC 쌍대문제 모드 수렴 속도: {time.time() - start_dual:.4f}초")
-
-# 4. 머서의 정리 위반 커스텀 싱크홀 커널 정의 실험
-def non_mercer_kernel(X1, X2):
-    return np.sin(np.dot(X1, X2.T)) * -5.0  # 준양정치(Positive Semi-definite) 성질 완전 파괴
-
-clf_custom = SVC(kernel=non_mercer_kernel, max_iter=50000)
-clf_custom.fit(X_large_n[:200, :2], y_large_n[:200])  # 불량 커널 주입 시 n_iter_ 폭발 측정용
+# 결정 경계 및 마진 트랙 시각화
+ax.contourf(x0, x1, y_pred, cmap=plt.cm.bwr, alpha=0.15)
+ax.contour(x0, x1, y_decision, levels=[-1, 0, 1], colors=['blue', 'black', 'red'], linestyles=['--', '-', '--'])
