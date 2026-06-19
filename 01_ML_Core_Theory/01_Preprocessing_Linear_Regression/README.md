@@ -112,7 +112,7 @@
 
 ---
 
-## 🛠 기술 스택 및 라이브러리
+## 기술 스택 및 라이브러리
 * **Language:** Python 3.10+
 * **Data Science:** `pandas`, `numpy`, `scikit-learn`
 * **Visualization:** `matplotlib`, `seaborn`
