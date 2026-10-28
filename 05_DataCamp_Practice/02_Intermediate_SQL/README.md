@@ -81,3 +81,40 @@ FROM ➔ WHERE ➔ GROUP BY ➔ HAVING ➔ SELECT ➔ ORDER BY ➔ LIMIT
 
 ---
 
+## 5. Advanced Data Manipulation
+
+### 서브쿼리 (Subquery)
+* **위치별 활용**
+  * **`WHERE`**: 조건 목록 및 범위 필터링
+  * **`FROM`**: 임시 테이블(Derived Table) 형태로 활용
+  * **`SELECT`**: 단일 스칼라 값 비교
+* **상관 서브쿼리 (Correlated Subquery)**: 메인 쿼리의 행마다 반복 실행되어 조건을 비교하는 서브쿼리
+
+### 조건문 (`CASE WHEN`)
+```sql
+CASE 
+    WHEN 조건1 THEN 결과1
+    WHEN 조건2 THEN 결과2
+    ELSE 기본값 
+END
+```
+* `SUM(CASE WHEN ... THEN 1 END)` 형태로 조건별 집계 연산에 응용 가능
+
+### 공통 테이블 표현식 (CTE)
+```sql
+WITH cte_name AS (
+    SELECT column1, column2
+    FROM table_name
+)
+SELECT * FROM cte_name;
+```
+* `WITH` 구문을 활용하여 메인 쿼리 전에 가상 테이블을 선언함으로써 가독성 및 재사용성 향상
+
+### 윈도우 함수 (Window Functions)
+```sql
+함수() OVER (PARTITION BY 컬럼명 ORDER BY 컬럼명)
+```
+* 원본 레코드 행 수(지점)를 유지하면서 그룹별 집계/순위(`RANK()`, `AVG()` 등) 계산 가능
+
+
+
