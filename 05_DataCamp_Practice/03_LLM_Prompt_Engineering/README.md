@@ -46,7 +46,7 @@
 
 ### 비교: `json_object` vs `client.beta.chat.completions.parse()`
 * **`response_format={"type": "json_object"}`:** 구문적 신뢰성(JSON 문법 준수)만 보장하며, 개발자가 직접 `json.loads()`로 수동 파싱 및 검증 필요
-* **`client.beta.chat.completions.parse(response_format=PydanticModel)`:** 개발자가 정의한 Pydantic 스키마와 100% 일치하는 데이터 구조와 타입까지 완벽히 강제하며, 별도의 파싱 없이 `.parsed`로 즉시 사용 가능 **(강력 추천)**
+* **`client.beta.chat.completions.parse(response_format=PydanticModel)`:** 개발자가 정의한 Pydantic 스키마와 100% 일치하는 데이터 구조와 타입까지 완벽히 강제하며, 별도의 파싱 없이 `.parsed`로 즉시 사용 가능 
 
 ### Pydantic 활용 핵심 포인트
 * **`Field(description=...)`:** 필드별 의미를 자연어로 가이드하여 추출 정확도 향상
