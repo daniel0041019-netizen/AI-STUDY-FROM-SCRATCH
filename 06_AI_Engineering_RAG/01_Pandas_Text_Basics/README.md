@@ -4,17 +4,6 @@
 
 ---
 
-## 📌 Table of Contents
-1. [Pandas 기초 & DataFrame 구조](#1-pandas-기초--dataframe-구조)
-2. [DataFrame 정렬, 필터링 & 파생 변수](#2-dataframe-정렬-필터링--파생-변수)
-3. [요약 통계, 집계, 그룹화 & 피벗 테이블](#3-요약-통계-집계-그룹화--피벗-테이블)
-4. [인덱싱, 멀티인덱스 & 슬라이싱 (`.loc` / `.iloc`)](#4-인덱싱-멀티인덱스--슬라이싱-loc--iloc)
-5. [데이터 시각화 (Matplotlib 연동)](#5-데이터-시각화-matplotlib-연동)
-6. [결측치 처리, DataFrame 생성 & CSV 입출력](#6-결측치-처리-dataframe-생성--csv-입출력)
-7. [문자열 전용 메서드 (`.str`) 전처리](#7-문자열 전용-메서드-str-전처리)
-
----
-
 ## 1. Pandas 기초 & DataFrame 구조
 
 ### 기반 라이브러리와 철학
